@@ -202,7 +202,7 @@ function ProductDetailSection({ product }) {
             gap: 8
           }}
         >
-          📋 Chi Tiết Sản Phẩm
+          Chi Tiết Sản Phẩm
         </h2>
         <div
           className="product-description-content"
@@ -289,17 +289,15 @@ function ProductDetailSection({ product }) {
           top: "20px"
         }}>
           <h4>
-            👨‍💼 Chuyên gia nói gì?
+            Chuyên gia nói gì?
           </h4>
           
           {loading ? (
             <div className="loading">
-              <div style={{ marginBottom: "8px" }}>🔄</div>
               Đang tải nhận xét chuyên gia...
             </div>
           ) : !reviews.length ? (
             <div className="no-reviews">
-              <div style={{ fontSize: "32px", marginBottom: "8px" }}>💬</div>
               Chưa có nhận xét từ chuyên gia
             </div>
           ) : (

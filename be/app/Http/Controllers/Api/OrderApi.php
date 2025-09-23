@@ -256,16 +256,57 @@ class OrderApi extends Controller
     public function checkPurchased(Request $request)
     {
         $user_id = $request->query('user_id');
+        $email = $request->query('email');
         $product_id = $request->query('product_id');
 
-        $order = \App\Models\Order::where('user_id', $user_id)
-            ->where('status', 'completed')
+        // Debug log
+        \Log::info('CheckPurchased API called', [
+            'user_id' => $user_id,
+            'email' => $email,
+            'product_id' => $product_id
+        ]);
+
+        if (!$product_id) {
+            return response()->json(['error' => 'product_id is required'], 400);
+        }
+
+        $orderQuery = \App\Models\Order::where('status', 'completed')
             ->whereHas('orderDetails', function($q) use ($product_id) {
                 $q->where('Product_ID', $product_id);
-            })
-            ->first();
+            });
 
-        return response()->json(['purchased' => !!$order]);
+        // Debug query
+        \Log::info('Query SQL', [
+            'sql' => $orderQuery->toSql(),
+            'bindings' => $orderQuery->getBindings()
+        ]);
+
+        // Tìm theo user_id trước nếu có
+        if ($user_id) {
+            $order = $orderQuery->where('user_id', $user_id)->first();
+            \Log::info('Search by user_id result', [
+                'user_id' => $user_id,
+                'found' => $order ? $order->id : 'NOT_FOUND'
+            ]);
+            if ($order) {
+                return response()->json(['purchased' => true]);
+            }
+        }
+
+        // Nếu không tìm thấy bằng user_id, thử tìm bằng email
+        if ($email) {
+            $order = $orderQuery->where('email', $email)->first();
+            \Log::info('Search by email result', [
+                'email' => $email,
+                'found' => $order ? $order->id : 'NOT_FOUND'
+            ]);
+            if ($order) {
+                return response()->json(['purchased' => true]);
+            }
+        }
+
+        \Log::info('No order found, returning purchased = false');
+        return response()->json(['purchased' => false]);
     }
 
     private function calculateShippingFee($total, $area, $distanceKm)

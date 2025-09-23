@@ -25,18 +25,83 @@ function ProductRating({ productId, user }) {
 
   useEffect(() => {
     if (user && productId) {
-      console.log("Check purchased:", user.ID, productId); // Log giá trị truyền vào API
-      fetch(`http://localhost:8000/api/orders/check-purchased?user_id=${user.ID}&product_id=${productId}`)
-        .then(res => res.json())
-        .then(data => {
-          console.log("API response:", data); // Log kết quả trả về từ API
-          setHasPurchased(!!data.purchased);
-        })
-        .catch((err) => {
-          console.log("API error:", err); // Log lỗi nếu có
+      // Lấy thông tin user từ localStorage để đảm bảo có đủ thông tin
+      const storedUser = localStorage.getItem("user");
+      let userData = null;
+      
+      if (storedUser) {
+        try {
+          userData = JSON.parse(storedUser);
+        } catch (e) {
+          console.error("Error parsing stored user:", e);
+        }
+      }
+      
+      // Sử dụng thông tin từ localStorage nếu có, hoặc fallback về user prop
+      const userId = userData?.ID || user.ID || user.id;
+      const userEmail = userData?.Email || user.Email || user.email;
+      
+      console.log("=== PURCHASE VERIFICATION DEBUG ===");
+      console.log("User prop:", user);
+      console.log("Stored user:", userData);
+      console.log("Final user ID:", userId);
+      console.log("Final user email:", userEmail);
+      console.log("Product ID:", productId);
+      console.log("=====================================");
+      
+      // Thử check bằng cả user_id và email
+      const checkPurchaseAPI = async () => {
+        try {
+          // Thử API với user_id trước
+          if (userId) {
+            let res = await fetch(`http://localhost:8000/api/orders/check-purchased?user_id=${userId}&product_id=${productId}`);
+            console.log("API user_id status:", res.status);
+            
+            if (res.ok) {
+              let data = await res.json();
+              console.log("API user_id response:", data);
+              
+              if (data.purchased) {
+                console.log("✅ FOUND ORDER BY USER_ID - Setting hasPurchased = true");
+                setHasPurchased(true);
+                return;
+              }
+            }
+          }
+          
+          // Nếu không tìm thấy bằng user_id, thử bằng email
+          if (userEmail) {
+            let res = await fetch(`http://localhost:8000/api/orders/check-purchased?email=${encodeURIComponent(userEmail)}&product_id=${productId}`);
+            console.log("API email status:", res.status);
+            
+            if (res.ok) {
+              let data = await res.json();
+              console.log("API email response:", data);
+              
+              const purchased = data.purchased || data.has_purchased || data.canReview || data.can_review || false;
+              console.log("Final purchased value:", purchased);
+              
+              if (purchased) {
+                console.log("✅ FOUND ORDER BY EMAIL - Setting hasPurchased = true");
+                setHasPurchased(true);
+                return;
+              }
+            }
+          }
+          
+          // Nếu tất cả đều fail
+          console.log("❌ NO ORDERS FOUND - Setting hasPurchased = false");
           setHasPurchased(false);
-        });
+          
+        } catch (err) {
+          console.error("API error details:", err);
+          setHasPurchased(false);
+        }
+      };
+      
+      checkPurchaseAPI();
     } else {
+      console.log("Missing user or productId:", { user: !!user, productId });
       setHasPurchased(false);
     }
   }, [user, productId]);
@@ -100,6 +165,19 @@ function ProductRating({ productId, user }) {
       marginRight: "auto"
     }}>
       <h3 style={{ color: "#0154b9", marginBottom: 12 }}>Đánh giá sản phẩm</h3>
+      
+      {/* Debug info - xóa sau khi fix */}
+      <div style={{ 
+        background: "#f0f0f0", 
+        padding: "8px", 
+        margin: "8px 0", 
+        borderRadius: "4px", 
+        fontSize: "12px",
+        color: "#666"
+      }}>
+        Debug: User ID: {user?.ID}, Product ID: {productId}, Has Purchased: {hasPurchased ? "YES" : "NO"}
+      </div>
+      
       {hasPurchased ? (
         <>
           <div style={{ fontSize: 22, marginBottom: 8 }}>
@@ -133,7 +211,7 @@ function ProductRating({ productId, user }) {
               transition: "background 0.18s"
             }}
           >
-            📷 Chọn tối đa 5 ảnh
+            Chọn tối đa 5 ảnh
           </label>
           <input
             id="rating-images"

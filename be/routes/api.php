@@ -118,9 +118,11 @@ Route::resource('courts', CourtApi::class);
 Route::resource('court_bookings', CourtBookingApi::class);
 Route::resource('carts', CartApi::class);
 Route::resource('order_details', OrderDetailApi::class);
+// Route cụ thể phải đặt TRƯỚC apiResource
+Route::get('/orders/check-purchased', [OrderApi::class, 'checkPurchased']);
+Route::get('/orders/user/{id}', [OrderApi::class, 'getOrdersByUser']);
 Route::apiResource('orders', OrderApi::class);
 Route::apiResource('roles', RolesApiController::class);
-Route::get('/orders/user/{id}', [OrderApi::class, 'getOrdersByUser']);
 
 // Banner API
 Route::get('banners', [BannerApiController::class, 'index']);

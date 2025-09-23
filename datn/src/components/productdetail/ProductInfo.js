@@ -145,7 +145,6 @@ function ProductInfo() {
           alignItems: "center",
           color: "#495057"
         }}>
-          <span style={{ marginRight: "10px", fontSize: "18px" }}>🏷️</span>
           <strong style={{ marginRight: "8px" }}>Thương hiệu:</strong> 
           <span style={{ color: "#0154b9", fontWeight: "600" }}>{brandName}</span>
         </li>
@@ -156,7 +155,6 @@ function ProductInfo() {
           alignItems: "center",
           color: "#495057"
         }}>
-          <span style={{ marginRight: "10px", fontSize: "18px" }}>📦</span>
           <strong style={{ marginRight: "8px" }}>Số lượng:</strong> 
           <span style={{ color: "#28a745", fontWeight: "600" }}>{displayQuantity}</span>
         </li>
@@ -167,7 +165,6 @@ function ProductInfo() {
           alignItems: "center",
           color: "#495057"
         }}>
-          <span style={{ marginRight: "10px", fontSize: "18px" }}>✅</span>
           <strong style={{ marginRight: "8px" }}>Tình trạng:</strong> 
           <span style={{ color: "#28a745", fontWeight: "600" }}>{stockStatus}</span>
         </li>
@@ -177,7 +174,6 @@ function ProductInfo() {
           alignItems: "center", 
           color: "#495057"
         }}>
-          <span style={{ marginRight: "10px", fontSize: "18px" }}>🔖</span>
           <strong style={{ marginRight: "8px" }}>SKU:</strong> 
           <span style={{ color: "#6c757d" }}>{sku}</span>
         </li>
@@ -195,7 +191,7 @@ function ProductInfo() {
           marginBottom: "12px",
           display: "block"
         }}>
-          📝 Mô tả sản phẩm:
+          Mô tả sản phẩm:
         </strong>
         <pre style={{
           whiteSpace: "pre-wrap",
@@ -255,7 +251,7 @@ function ProductInfo() {
           marginBottom: "12px",
           fontSize: "17px"
         }}>
-          📊 Số lượng còn lại: <span style={{ color: "#28a745" }}>{displayQuantity}</span>
+          Số lượng còn lại: <span style={{ color: "#28a745" }}>{displayQuantity}</span>
         </p>
         
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
@@ -393,7 +389,7 @@ function ProductInfo() {
               color: "#d70018", 
               marginBottom: 12
             }}>
-              ⚠️ Sản phẩm bạn chọn đã hết hàng!
+              Sản phẩm bạn chọn đã hết hàng!
             </div>
             
             <p style={{

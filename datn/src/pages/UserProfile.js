@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/home/Header";
 import Footer from "../components/home/Footer";
+import SectionHeading from "../components/home/SectionHeading";
+
 
 function UserProfile() {
   const [user, setUser] = useState(null);
@@ -477,7 +479,12 @@ function UserProfile() {
 
   return (
     <>
+   
       <Header />
+       <SectionHeading
+        title="THÔNG TIN CÁ NHÂN"
+        subtitle="Quản lý thông tin cá nhân, lịch sử đơn hàng và đặt sân của bạn!"
+      />
       <div
         style={{
           display: "flex",
@@ -493,6 +500,8 @@ function UserProfile() {
           overflow: "hidden",
         }}
       >
+        
+        
         {/* Menu bên trái */}
         <div
           style={{
