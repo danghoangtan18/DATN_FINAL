@@ -21,9 +21,14 @@ function ArticleListPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Lấy danh sách chuyên mục
+  // Reset page khi thay đổi filter
   useEffect(() => {
-    fetch("/api/categories")
+    setPage(1);
+  }, [selectedCategory, search]);
+
+  // Lấy danh sách chuyên mục bài viết
+  useEffect(() => {
+    fetch("/api/post_categories")
       .then(res => res.json())
       .then(data => {
         const categories = data.map(cat => ({
@@ -31,31 +36,55 @@ function ArticleListPage() {
           name: cat.Name
         }));
         setCategories(categories);
-      });
+      })
+      .catch(error => console.error("Error loading categories:", error));
   }, []);
 
   // Lấy danh sách bài viết theo filter
   useEffect(() => {
     setLoading(true);
-    let url = `/api/posts?page=${page}`;
+    let url = `/api/posts?page=${page}&per_page=12`;
     if (selectedCategory !== "all") url += `&category=${selectedCategory}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
+    
     fetch(url)
       .then(res => res.json())
       .then(data => {
         console.log("DATA POSTS:", data);
-        // Nếu data là mảng bài viết
-        const articles = data.map(a => ({
-          id: a.Post_ID,
-          title: a.Title,
-          summary: a.Summary, // hoặc trường mô tả ngắn nếu có
-          ...a
-        }));
-        setArticles(articles);
-        setTotalPages(data.totalPages || 1);
+        
+        if (data.data) {
+          // Dữ liệu có phân trang
+          const articles = data.data.map(a => ({
+            id: a.Post_ID,
+            title: a.Title,
+            summary: a.Excerpt || a.Summary, 
+            content: a.Content,
+            thumbnail: a.Thumbnail,
+            created_at: a.Created_at,
+            view: a.View,
+            category: a.category,
+            author: a.user,
+            ...a
+          }));
+          setArticles(articles);
+          setTotalPages(data.last_page || 1);
+        } else {
+          // Dữ liệu là mảng đơn giản (fallback)
+          const articles = data.map(a => ({
+            id: a.Post_ID,
+            title: a.Title,
+            summary: a.Excerpt || a.Summary,
+            ...a
+          }));
+          setArticles(articles);
+          setTotalPages(1);
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((error) => {
+        console.error("Error loading articles:", error);
+        setLoading(false);
+      });
   }, [selectedCategory, search, page]);
 
   const breadcrumb = [
@@ -90,9 +119,7 @@ function ArticleListPage() {
               selected={selectedCategory}
               onChange={setSelectedCategory}
             />
-       <ArticleSearchBox value={search} onChange={setSearch} />
-
-           
+            <ArticleSearchBox onSearch={setSearch} />
           </div>
           {/* Kết thúc: Bộ lọc và tìm kiếm */}
 

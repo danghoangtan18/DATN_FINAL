@@ -8,9 +8,41 @@ use Illuminate\Http\Request;
 
 class PostApiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Post::with('user', 'category')->get(), 200);
+        $query = Post::with('user', 'category')->where('Status', 1); // Chỉ lấy bài viết đã publish
+        
+        // Tìm kiếm theo từ khóa
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('Title', 'LIKE', "%{$search}%")
+                  ->orWhere('Excerpt', 'LIKE', "%{$search}%")
+                  ->orWhere('Content', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Lọc theo category
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('Category_ID', $request->category);
+        }
+        
+        // Sắp xếp mới nhất
+        $query->orderBy('Created_at', 'desc');
+        
+        // Phân trang
+        $perPage = $request->get('per_page', 12);
+        $posts = $query->paginate($perPage);
+        
+        return response()->json([
+            'data' => $posts->items(),
+            'current_page' => $posts->currentPage(),
+            'last_page' => $posts->lastPage(),
+            'per_page' => $posts->perPage(),
+            'total' => $posts->total(),
+            'from' => $posts->firstItem(),
+            'to' => $posts->lastItem()
+        ], 200);
     }
 
     public function store(Request $request)

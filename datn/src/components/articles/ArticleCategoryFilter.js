@@ -16,10 +16,8 @@ const ArticleCategoryFilter = ({ categories, selected, onChange }) => {
 
   const getSelectedCategoryName = () => {
     if (selected === "all") return "Tất cả bài viết";
-    if (selected === "hot") return "Bài viết hot nhất";
-    if (selected === "newest") return "Bài viết mới nhất";
-    if (selected === "most_viewed") return "Bài viết nhiều lượt xem nhất";
-    return "Tất cả bài viết";
+    const category = categories.find(cat => cat.id === selected);
+    return category ? category.name : "Tất cả bài viết";
   };
 
   const handleCategorySelect = (categoryId) => {
@@ -80,15 +78,40 @@ const ArticleCategoryFilter = ({ categories, selected, onChange }) => {
           <button onClick={() => handleCategorySelect("all")} style={{ width: "100%", padding: "14px 24px", border: "none", background: selected === "all" ? "linear-gradient(90deg, #0154b9, #3bb2ff)" : "transparent", color: selected === "all" ? "#fff" : "#0154b9", textAlign: "left", cursor: "pointer", fontSize: 15, fontWeight: selected === "all" ? 600 : 500, transition: "all 0.2s ease", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid #f1f5f9" }}>
             <span>Tất cả bài viết</span>
           </button>
-          <button onClick={() => handleCategorySelect("hot")} style={{ width: "100%", padding: "14px 24px", border: "none", background: selected === "hot" ? "linear-gradient(90deg, #0154b9, #3bb2ff)" : "transparent", color: selected === "hot" ? "#fff" : "#0154b9", textAlign: "left", cursor: "pointer", fontSize: 15, fontWeight: selected === "hot" ? 600 : 500, transition: "all 0.2s ease", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid #f1f5f9" }}>
-            <span>Bài viết hot nhất</span>
-          </button>
-          <button onClick={() => handleCategorySelect("newest")} style={{ width: "100%", padding: "14px 24px", border: "none", background: selected === "newest" ? "linear-gradient(90deg, #0154b9, #3bb2ff)" : "transparent", color: selected === "newest" ? "#fff" : "#0154b9", textAlign: "left", cursor: "pointer", fontSize: 15, fontWeight: selected === "newest" ? 600 : 500, transition: "all 0.2s ease", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid #f1f5f9" }}>
-            <span>Bài viết mới nhất</span>
-          </button>
-          <button onClick={() => handleCategorySelect("most_viewed")} style={{ width: "100%", padding: "14px 24px", border: "none", background: selected === "most_viewed" ? "linear-gradient(90deg, #0154b9, #3bb2ff)" : "transparent", color: selected === "most_viewed" ? "#fff" : "#0154b9", textAlign: "left", cursor: "pointer", fontSize: 15, fontWeight: selected === "most_viewed" ? 600 : 500, transition: "all 0.2s ease", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid #f1f5f9" }}>
-            <span>Bài viết nhiều lượt xem nhất</span>
-          </button>
+          {categories.map(category => (
+            <button 
+              key={category.id}
+              onClick={() => handleCategorySelect(category.id)} 
+              style={{ 
+                width: "100%", 
+                padding: "14px 24px", 
+                border: "none", 
+                background: selected === category.id ? "linear-gradient(90deg, #0154b9, #3bb2ff)" : "transparent", 
+                color: selected === category.id ? "#fff" : "#0154b9", 
+                textAlign: "left", 
+                cursor: "pointer", 
+                fontSize: 15, 
+                fontWeight: selected === category.id ? 600 : 500, 
+                transition: "all 0.2s ease", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 10, 
+                borderBottom: "1px solid #f1f5f9" 
+              }}
+              onMouseEnter={(e) => {
+                if (selected !== category.id) {
+                  e.target.style.background = "#f8fafc";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selected !== category.id) {
+                  e.target.style.background = "transparent";
+                }
+              }}
+            >
+              <span>{category.name}</span>
+            </button>
+          ))}
         </div>
       )}
 
