@@ -10,6 +10,7 @@ use App\Models\District;
 use App\Models\Ward;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class OrderController extends Controller
 {
@@ -272,6 +273,12 @@ class OrderController extends Controller
         if ($order->status === 'pending') {
             $order->status = 'confirmed';
             $order->save();
+            
+            // Gửi thông báo cho user
+            if ($order->user_id) {
+                NotificationService::orderConfirmed($order->user_id, $order->id);
+            }
+            
             return redirect()->back()->with('success', 'Đã xác nhận đơn hàng!');
         }
         return redirect()->back()->with('error', 'Chỉ xác nhận được đơn hàng đang chờ xử lý!');
@@ -284,6 +291,12 @@ class OrderController extends Controller
         if ($order->status === 'pending') {
             $order->status = 'cancelled';
             $order->save();
+            
+            // Gửi thông báo cho user
+            if ($order->user_id) {
+                NotificationService::orderCancelled($order->user_id, $order->id, 'Đơn hàng bị hủy bởi admin');
+            }
+            
             return redirect()->back()->with('success', 'Đã hủy đơn hàng!');
         }
         return redirect()->back()->with('error', 'Không thể hủy đơn hàng đã xác nhận hoặc đã hủy!');
@@ -296,6 +309,12 @@ class OrderController extends Controller
         if ($order->status === 'shipping' || $order->status === 'confirmed') {
             $order->status = 'completed'; // hoặc 'shipped' nếu bạn muốn trạng thái riêng
             $order->save();
+            
+            // Gửi thông báo cho user
+            if ($order->user_id) {
+                NotificationService::orderDelivered($order->user_id, $order->id);
+            }
+            
             return redirect()->back()->with('success', 'Đã xác nhận giao hàng thành công!');
         }
         return redirect()->back()->with('error', 'Chỉ xác nhận giao hàng cho đơn đang giao hoặc đã xác nhận!');
@@ -308,6 +327,12 @@ class OrderController extends Controller
         if ($order->status === 'confirmed') {
             $order->status = 'shipping';
             $order->save();
+            
+            // Gửi thông báo cho user
+            if ($order->user_id) {
+                NotificationService::orderShipping($order->user_id, $order->id);
+            }
+            
             return redirect()->back()->with('success', 'Đơn hàng đã chuyển sang trạng thái Đang giao!');
         }
         return redirect()->back()->with('error', 'Chỉ chuyển sang Đang giao với đơn đã xác nhận!');

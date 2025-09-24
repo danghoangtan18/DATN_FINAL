@@ -38,14 +38,20 @@ use App\Http\Controllers\Auth\LoginController;
 // Trang mặc định chuyển hướng đến /admin
 Route::redirect('/', '/admin');
 
-// Trang dashboard admin
-Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
+// Route GET /login redirect về React app hoặc admin login
+Route::get('/login', function() {
+    // Nếu đang ở domain admin thì redirect về admin login
+    return redirect('/admin/login');
+})->name('login');
+
+// Trang dashboard admin - yêu cầu authentication
+Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard')->middleware('admin.auth');
 
 Route::get('/admin/dashboard/filter', [DashboardController::class, 'filter'])
-    ->name('admin.dashboard.filter');
+    ->name('admin.dashboard.filter')->middleware('admin.auth');
 
-// Nhóm route ADMIN
-Route::prefix('admin')->name('admin.')->group(function () {
+// Nhóm route ADMIN - yêu cầu authentication
+Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function () {
     Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('orders.statistics');
     Route::resource('orders', OrderController::class);
     Route::delete('order-details/{id}', [OrderDetailController::class, 'destroy'])->name('order-details.destroy');
@@ -174,8 +180,8 @@ Route::get('/admin/login', function () {
 // Route xử lý đăng nhập admin
 Route::post('/admin/login', [App\Http\Controllers\Admin\AdminLoginController::class, 'login'])->name('admin.login.submit');
 
-// Route xử lý đăng nhập cho user (React gọi)
-Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+// Route xử lý đăng xuất admin
+Route::post('/admin/logout', [App\Http\Controllers\Admin\AdminLoginController::class, 'logout'])->name('admin.logout');
 
 // THÊM ROUTE NÀY VÀO CUỐI FILE:
 Route::get('/admin/products/product-lines/brand/{brandId}', [App\Http\Controllers\Admin\ProductController::class, 'getProductLinesByBrand']);

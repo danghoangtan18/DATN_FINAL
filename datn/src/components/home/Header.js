@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { API_CONFIG, API_ENDPOINTS, getImageUrl } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 
 // API URL
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -90,6 +91,7 @@ const categories = [
 
 const Header = (props) => {
   const navigate = useNavigate();
+  const { user, logout: authLogout } = useAuth();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isProductOpen, setIsProductOpen] = useState(false);
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
@@ -103,10 +105,6 @@ const Header = (props) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef();
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
-
-  // Lấy user từ localStorage
-  const userStr = localStorage.getItem("user");
-  const user = userStr ? JSON.parse(userStr) : null;
 
   // Đếm số lượng sản phẩm trong giỏ hàng
   useEffect(() => {
@@ -179,9 +177,7 @@ const Header = (props) => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("cart");
-    localStorage.removeItem("user");
+    authLogout();
     setCartItems([]);
     navigate("/login");
   };

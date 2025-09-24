@@ -66,11 +66,16 @@ Route::get('/users/{id}', [UserApiController::class, 'show']); // public user pr
 Route::post('/users', [UserApiController::class, 'store']); // registration
 Route::delete('/users/{id}', [UserApiController::class, 'destroy']); // admin only
 
-// Login
+// Authentication Routes
 Route::post('/login', [UserApiController::class, 'login']);
-
-// Đăng ký tài khoản (API)
+Route::post('/admin/login', [UserApiController::class, 'adminLogin']);
 Route::post('/register', [RegisterController::class, 'register']);
+
+// JWT Protected Routes
+Route::middleware('jwt.auth')->group(function () {
+    Route::post('/logout', [UserApiController::class, 'logout']);
+    Route::get('/me', [UserApiController::class, 'me']);
+});
 
 // Vouchers, Posts, Courts, Orders, etc.
 Route::resource('vouchers', VoucherApiController::class);
@@ -107,7 +112,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::get('popup', [PopupApiController::class, 'index']);
 
 // ChatBot
-Route::post('/chatbot/badminton', [ProductApiController::class, 'chatbot']);
+Route::post('/chatbot/badminton', [ChatBotController::class, 'chatBadminton']);
 
 // Product Variants
 Route::get('/product-variants', [ProductVariantController::class, 'index']);
@@ -126,6 +131,7 @@ Route::post('/products/{productId}/ratings', [ProductRatingController::class, 's
 
 // Notifications - chuyển thành public
 Route::get('/notifications', [NotificationController::class, 'index']);
+Route::get('/notifications/unread/{user_id?}', [NotificationController::class, 'unread']);
 Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 Route::post('/notifications/mark-read', [NotificationController::class, 'markManyAsRead']);
 Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);

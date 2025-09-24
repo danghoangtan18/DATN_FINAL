@@ -14,7 +14,7 @@ import SectionHeading from "../components/home/SectionHeading";
 import SpecialOfferBox from "../components/home/SpecialOfferBox";
 import ProductCategories from "../components/home/ProductCategories";
 import ProductGridBestSeller from "../components/home/ProductGrid copy";
-import ChatBotBadminton from "../components/ChatBotBadminton"; // Thêm dòng này
+import ChatBotBadminton from "../components/ChatBotBadmintonNew"; // Sử dụng chatbot mới đẹp hơn
 import WelcomeModal from "../components/home/WelcomeModal";
 
 const API_URL = "http://localhost:8000";

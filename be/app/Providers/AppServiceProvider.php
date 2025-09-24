@@ -12,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Đăng ký ChatBot services
+        $this->app->singleton(\App\Services\ConversationContextService::class);
+        $this->app->singleton(\App\Services\ChatBotService::class);
     }
 
     /**

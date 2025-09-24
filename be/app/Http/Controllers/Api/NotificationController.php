@@ -22,6 +22,20 @@ class NotificationController extends Controller
         return response()->json($notifications);
     }
 
+    // Lấy thông báo chưa đọc
+    public function unread(Request $request, $userId = null)
+    {
+        $userId = $userId ?: ($request->user() ? $request->user()->id : $request->query('user_id'));
+        
+        $notifications = Notification::where('User_ID', $userId)
+            ->where('is_read', 0)
+            ->orderBy('Created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return response()->json($notifications);
+    }
+
     // Đánh dấu đã đọc 1 thông báo
     public function markAsRead($id, Request $request)
     {

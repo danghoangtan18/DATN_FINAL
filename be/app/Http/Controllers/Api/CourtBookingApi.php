@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CourtBooking;
+use App\Services\NotificationService;
 
 class CourtBookingApi extends Controller
 {
@@ -37,6 +38,14 @@ class CourtBookingApi extends Controller
 
         $booking = CourtBooking::create($data);
         $booking->load(['user', 'court', 'voucher']);
+
+        // Gửi thông báo cho user
+        NotificationService::bookingCreated(
+            $booking->User_ID,
+            $booking->Bookings_ID,
+            $booking->court->Name ?? 'Sân cầu lông',
+            $booking->Booking_date
+        );
 
         return response()->json([
             'message' => 'Đặt sân thành công',

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Services\NotificationService;
 
 class UserApiController extends Controller
 {
@@ -116,6 +117,9 @@ class UserApiController extends Controller
         }
 
         $user->save();
+        
+        // Gửi thông báo cập nhật profile thành công
+        NotificationService::profileUpdated($user->ID);
 
         return response()->json($user, 200);
     }
@@ -149,9 +153,76 @@ class UserApiController extends Controller
             return response()->json(['message' => 'Email hoặc mật khẩu không đúng'], 401);
         }
 
+        // Tạo JWT token
+        $token = auth('api')->login($user);
+
+        // Load role information
+        $user->load('role');
+
         return response()->json([
             'message' => 'Đăng nhập thành công',
             'user'    => $user,
+            'token'   => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60
         ], 200);
+    }
+
+    // ✅ POST /api/admin/login (Đăng nhập admin)
+    public function adminLogin(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email'    => 'required|email',
+            'password' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = User::where('Email', $request->email)->first();
+
+        if (! $user || ! Hash::check($request->password, $user->Password)) {
+            return response()->json(['message' => 'Email hoặc mật khẩu không đúng'], 401);
+        }
+
+        // Kiểm tra quyền admin
+        if ($user->Role_ID !== \App\Models\Role::ADMIN) {
+            return response()->json(['message' => 'Bạn không có quyền truy cập admin'], 403);
+        }
+
+        // Tạo JWT token
+        $token = auth('api')->login($user);
+
+        // Load role information
+        $user->load('role');
+
+        return response()->json([
+            'message' => 'Đăng nhập admin thành công',
+            'user'    => $user,
+            'token'   => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'role'    => $user->role->Name ?? 'Admin'
+        ], 200);
+    }
+
+    // ✅ POST /api/logout (Đăng xuất)
+    public function logout()
+    {
+        auth('api')->logout();
+        return response()->json(['message' => 'Đăng xuất thành công'], 200);
+    }
+
+    // ✅ GET /api/me (Lấy thông tin user hiện tại)
+    public function me()
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $user->load('role');
+        return response()->json($user);
     }
 }

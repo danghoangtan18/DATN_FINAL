@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Mail\OrderSuccessMail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Notification;
+use App\Services\NotificationService;
 
 class OrderApi extends Controller
 {
@@ -145,12 +146,7 @@ class OrderApi extends Controller
 
         // Gửi thông báo cho user
         if ($userId) {
-            Notification::create([
-                'User_ID' => $userId,
-                'Title' => 'Đặt hàng thành công',
-                'Message' => 'Cảm ơn bạn đã đặt hàng tại Vicnex!',
-                'Type' => 'order',
-            ]);
+            NotificationService::orderCreated($userId, $order->id, $order->total_price);
         }
 
         return response()->json($order, 201);

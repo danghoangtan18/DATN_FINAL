@@ -7,11 +7,21 @@ function ChatBotBadminton() {
   const [messages, setMessages] = useState([
     {
       from: "bot",
-      text: "Xin chào! Mình là trợ lý Vicnex, sẵn sàng tư vấn các sản phẩm cầu lông phù hợp cho bạn. Bạn cần hỗ trợ gì không?"
+      text: "Xin chào! Tôi là trợ lý bán hàng chuyên nghiệp của Vicnex 🏸\n\nTôi có thể giúp bạn:\n• Tư vấn vợt theo trình độ & phong cách\n• Chọn giày, trang phục phù hợp\n• Đặt sân cầu lông\n• Tư vấn ngân sách\n\nBạn cần hỗ trợ gì hôm nay? 😊"
     }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState(() => {
+    // Tạo session ID duy nhất cho mỗi user
+    return localStorage.getItem('chatbot_session') || 
+           'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  });
+
+  // Lưu session vào localStorage
+  React.useEffect(() => {
+    localStorage.setItem('chatbot_session', sessionId);
+  }, [sessionId]);
 
   // Gửi câu hỏi lên backend và nhận câu trả lời
   const sendMessage = async () => {
@@ -23,9 +33,18 @@ function ChatBotBadminton() {
       const res = await fetch("http://localhost:8000/api/chatbot/badminton", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: input })
+        body: JSON.stringify({ 
+          question: input,
+          session_id: sessionId 
+        })
       });
       const data = await res.json();
+      
+      // Cập nhật session ID nếu server trả về
+      if (data.session_id) {
+        setSessionId(data.session_id);
+      }
+      
       setMessages(prev => [
         ...prev,
         { from: "bot", text: data.answer, products: data.products }
@@ -33,7 +52,7 @@ function ChatBotBadminton() {
     } catch {
       setMessages(prev => [
         ...prev,
-        { from: "bot", text: "Xin lỗi, tôi không trả lời được lúc này." }
+        { from: "bot", text: "Xin lỗi, tôi đang gặp trục trặc kỹ thuật. Bạn có thể thử lại sau một chút được không? 🙏" }
       ]);
     }
     setInput("");

@@ -16,17 +16,22 @@ import UserProfile from "./pages/UserProfile";
 import ThanhyouPage from "./pages/ThanhyouPage";
 import ContactPage from "./pages/ContactPage";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
 import ArticlePage from "./pages/ArticlePage";
 import ArticleListPage from "./pages/ArticleListPage";
 import FaqPage from "./pages/FaqPage";
 import PolicyPage from "./pages/PolicyPage";
 import PromotionPage from "./pages/PromotionPage";
 import VnpayCallback from "./components/VnpayCallback";
+import NotificationToast from "./components/notifications/NotificationToast";
+import { useNotifications } from "./hooks/useNotifications";
 
-function App() {
+function AppContent() {
+  // Khởi tạo notification service
+  useNotifications();
+  
   return (
-    <CartProvider>
-      <BrowserRouter>
+    <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -49,8 +54,20 @@ function App() {
           <Route path="/promotions" element={<PromotionPage />} />
           <Route path="/vnpay-callback" element={<VnpayCallback />} />
         </Routes>
+        
+        {/* Component hiển thị notification toast */}
+        <NotificationToast />
       </BrowserRouter>
-    </CartProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

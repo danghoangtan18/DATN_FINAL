@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\NotificationService;
+use App\Models\User;
 
 class PromotionController extends Controller
 {
@@ -70,7 +72,26 @@ class PromotionController extends Controller
         $data['start_date'] = Carbon::parse($data['start_date']);
         $data['end_date'] = Carbon::parse($data['end_date']);
 
-        Promotion::create($data);
+        $promotion = Promotion::create($data);
+
+        // Nếu khuyến mãi có hiệu lực ngay, gửi thông báo cho tất cả user
+        if ($promotion->isActive()) {
+            $activeUsers = User::where('Status', 1)->pluck('ID')->toArray();
+            
+            if (!empty($activeUsers)) {
+                NotificationService::broadcast(
+                    $activeUsers,
+                    '🎊 Khuyến mãi mới!',
+                    "Chương trình khuyến mãi '{$promotion->title}' với giá trị giảm {$promotion->discount_display} đã có hiệu lực! " . 
+                    ($promotion->promotion_code ? "Sử dụng mã: {$promotion->promotion_code}. " : "") . 
+                    "Nhanh tay mua sắm để không bỏ lỡ ưu đãi!",
+                    'promotion',
+                    '/promotions',
+                    'fas fa-gift',
+                    'normal'
+                );
+            }
+        }
 
         return redirect()->route('admin.promotions.index')
             ->with('success', 'Khuyến mãi đã được tạo thành công!');
