@@ -2,9 +2,10 @@ import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { API_CONFIG, API_ENDPOINTS, getImageUrl } from "../../config/api";
 
 // API URL
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 // Style dùng chung cho icon
 const iconStyle = {
@@ -89,7 +90,6 @@ const categories = [
 
 const Header = (props) => {
   const navigate = useNavigate();
-  const [isFocused, setIsFocused] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isProductOpen, setIsProductOpen] = useState(false);
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
@@ -98,12 +98,10 @@ const Header = (props) => {
   const [cartCount, setCartCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef();
-  const [isStoreDropdownOpen, setIsStoreDropdownOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   // Lấy user từ localStorage
@@ -131,12 +129,21 @@ const Header = (props) => {
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!user || !user.ID) return;
-      const res = await axios.get(`${API_URL}/api/notifications?user_id=${user.ID}`);
-      const notificationsData = res.data.data || [];
-      setNotifications(notificationsData);
+      try {        
+        const res = await axios.get(`${API_URL}/api/notifications?user_id=${user.ID}`);
+        const notificationsData = res.data.data || [];
+        setNotifications(notificationsData);
 
-      const unreadCount = notificationsData.filter(notification => !notification.is_read).length;
-      setUnreadCount(unreadCount);
+        const unreadCount = notificationsData.filter(notification => !notification.is_read).length;
+        setUnreadCount(unreadCount);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        // Nếu lỗi 401, có thể user chưa đăng nhập hoặc token hết hạn
+        if (error.response?.status === 401) {
+          setNotifications([]);
+          setUnreadCount(0);
+        }
+      }
     };
 
     fetchNotifications();
@@ -147,7 +154,7 @@ const Header = (props) => {
 
   // Gợi ý sản phẩm khi nhập
   useEffect(() => {
-    if (searchValue.trim().length < 2) {
+    if (searchValue.trim().length < 1) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -182,12 +189,16 @@ const Header = (props) => {
   const handleNotificationDropdownOpen = async () => {
     setIsNotificationOpen(true);
     if (unreadCount > 0 && user && user.ID) {
-      // Gọi API đánh dấu tất cả thông báo là đã đọc
-      await axios.post(`${API_URL}/api/notifications/read-all`, { user_id: user.ID });
-      setUnreadCount(0);
-      // Optionally, cập nhật lại danh sách thông báo
-      const res = await axios.get(`${API_URL}/api/notifications?user_id=${user.ID}`);
-      setNotifications(res.data.data || []);
+      try {        
+        // Gọi API đánh dấu tất cả thông báo là đã đọc
+        await axios.post(`${API_URL}/api/notifications/read-all`, { user_id: user.ID });
+        setUnreadCount(0);
+        // Optionally, cập nhật lại danh sách thông báo
+        const res = await axios.get(`${API_URL}/api/notifications?user_id=${user.ID}`);
+        setNotifications(res.data.data || []);
+      } catch (error) {
+        console.error("Error marking notifications as read:", error);
+      }
     }
   };
 
@@ -564,9 +575,9 @@ const Header = (props) => {
                             >
                               <i className="fas fa-user" style={{ marginRight: 8 }}></i> Trang cá nhân
                             </Link>
-                            {(user.Role_ID === 1 || user.Role_ID === 2) && (
+                            {user.Role_ID === 1 && (
                               <a
-                                href="http://127.0.0.1:8000/admin"
+                                href={process.env.REACT_APP_ADMIN_URL || "http://127.0.0.1:8000/admin"}
                                 style={{
                                   padding: "10px 24px",
                                   color: "#0154b9",

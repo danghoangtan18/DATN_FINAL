@@ -19,10 +19,8 @@ function ProductDetailSection({ product }) {
       
       try {
         setLoading(true);
-        console.log("🔍 Fetching expert reviews for product:", product.Product_ID);
         
         const response = await axios.get(`http://localhost:8000/api/expert-reviews?product_id=${product.Product_ID}`);
-        console.log("📊 Expert reviews response:", response.data);
         
         if (response.data) {
           // Nếu response.data là array
@@ -38,7 +36,6 @@ function ProductDetailSection({ product }) {
             setReviews(response.data.reviews);
           }
           else {
-            console.log("⚠️ Unexpected expert reviews data structure");
             setReviews([]);
           }
         } else {
@@ -46,7 +43,7 @@ function ProductDetailSection({ product }) {
         }
         
       } catch (error) {
-        console.error("❌ Error fetching expert reviews:", error);
+        console.error("Error fetching expert reviews:", error);
         setReviews([]);
       } finally {
         setLoading(false);

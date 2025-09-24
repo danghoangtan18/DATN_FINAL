@@ -59,11 +59,22 @@ function CartRight({ cartItems }) {
     }
 
     const cartCategoryIds = cartItems.map(item => item.category?.Categories_ID).filter(Boolean);
+    
+    // Chuẩn bị dữ liệu cho API
+    const eligibleItems = cartItems.map(item => ({
+      price: Number(item.Discount_price) > 0 ? Number(item.Discount_price) : Number(item.Price) || 0,
+      qty: Number(item.quantity) || 1,
+      category_id: item.category?.Categories_ID
+    }));
 
     try {
-      const res = await axios.post("http://localhost:8000/api/vouchers/check", {
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+      const res = await axios.post(`${apiUrl}/api/vouchers/check`, {
         code: voucher,
         cart_category_ids: cartCategoryIds,
+        cart_subtotal: subtotal,
+        eligible_items: eligibleItems,
+        is_booking: false
       });
       if (res.data.valid) {
         setVoucherInfo({
@@ -76,6 +87,7 @@ function CartRight({ cartItems }) {
         setVoucherMsg(res.data.message || "Mã không hợp lệ.");
       }
     } catch (err) {
+      console.error("Voucher check error:", err);
       setVoucherInfo(null);
       setVoucherMsg("Có lỗi khi kiểm tra mã.");
     }
@@ -153,7 +165,7 @@ function CartRight({ cartItems }) {
           <ul style={{ margin: 0, paddingLeft: 18 }}>
             {eligibleItems.map(item => {
               const price = Number(item.Discount_price) > 0 ? Number(item.Discount_price) : Number(item.Price) || 0;
-              const qty = Number(item.qty) || 1;
+              const qty = Number(item.quantity) || 1;
               let itemDiscount = 0;
               if (voucherInfo.discount_type === "percentage") {
                 itemDiscount = Math.round((price * qty * voucherInfo.discount_value) / 100);
@@ -172,6 +184,13 @@ function CartRight({ cartItems }) {
           </ul>
         </div>
       )}
+      
+      <button
+        className="checkout-btn"
+        onClick={handleCheckout}
+      >
+        Thanh Toán
+      </button>
       
       <button
         className="checkout-btn"

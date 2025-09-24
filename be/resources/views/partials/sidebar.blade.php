@@ -148,15 +148,21 @@
             <a href="#"><i class='bx bxs-message-dots'></i><span class="text">Bình luận</span></a>
             <ul class="submenu">
                 <li>
-                    <a href="{{ route('admin.comments.post.index') }}"
-                    class="{{ request()->routeIs('admin.comments.post.*') ? 'active1' : '' }}">
-                        <i class='bx bx-list-ul'></i><span class="text">Bình luận bài viết</span>
+                    <a href="{{ route('admin.comments.dashboard') }}"
+                    class="{{ request()->routeIs('admin.comments.dashboard') ? 'active1' : '' }}">
+                        <i class='bx bx-tachometer'></i><span class="text">Tổng quan</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('admin.comments.product.index') }}"
-                    class="{{ request()->routeIs('admin.comments.product.*') ? 'active1' : '' }}">
-                        <i class='bx bx-list-ul'></i><span class="text">Bình luận sản phẩm</span>
+                    <a href="{{ route('admin.comments.product') }}"
+                    class="{{ request()->routeIs('admin.comments.product') ? 'active1' : '' }}">
+                        <i class='bx bx-package'></i><span class="text">Bình luận sản phẩm</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.comments.post') }}"
+                    class="{{ request()->routeIs('admin.comments.post') ? 'active1' : '' }}">
+                        <i class='bx bx-file'></i><span class="text">Bình luận bài viết</span>
                     </a>
                 </li>
             </ul>
@@ -251,7 +257,7 @@
         </li>
 
         {{-- Quản lý sân --}}
-        {{-- <li class="has-submenu  {{ request()->is('admin/courts*') || request()->is('admin/bookings*') ?  'active' : '' }}">
+        <li class="has-submenu  {{ request()->is('admin/courts*') || request()->is('admin/bookings*') ?  'active' : '' }}">
             <a href="#"><i class='bx bx-calendar-alt'></i><span class="text">Quản lí sân</span></a>
             <ul class="submenu">
                 <li>
@@ -275,10 +281,10 @@
                     </a>
                 </li>
             </ul>
-        </li> --}}
+        </li>
 
         {{-- Quản lý địa điểm --}}
-        {{-- <li class="has-submenu {{ request()->is('admin/locations*') ? 'active' : '' }}">
+        <li class="has-submenu {{ request()->is('admin/locations*') ? 'active' : '' }}">
             <a href="#"><i class='bx bx-map'></i><span class="text">Quản lý địa điểm</span></a>
             <ul class="submenu">
                 <li>
@@ -292,7 +298,7 @@
                     </a>
                 </li>
             </ul>
-        </li> --}}
+        </li>
 
         {{-- Thống kê --}}
         <li class="has-submenu  {{ request()->is('admin/statistics*') ? 'active' : '' }}">
@@ -337,7 +343,7 @@
         </li>
 
         {{-- Quản lý chuyên gia --}}
-        {{-- <li class="has-submenu {{ request()->is('admin/experts*') ? 'active' : '' }}">
+        <li class="has-submenu {{ request()->is('admin/experts*') ? 'active' : '' }}">
             <a href="#">
                 <i class='bx bx-user-pin'></i>
                 <span class="text">Chuyên gia</span>
@@ -356,9 +362,9 @@
                     </a>
                 </li>
             </ul>
-        </li> --}}
+        </li>
 
-        {{-- <li class="has-submenu {{ request()->is('admin/expert-reviews*') ? 'active' : '' }}">
+        <li class="has-submenu {{ request()->is('admin/expert-reviews*') ? 'active' : '' }}">
             <a href="#">
                 <i class='bx bx-comment-detail'></i>
                 <span class="text">Nhận xét chuyên gia</span>
@@ -377,6 +383,6 @@
                     </a>
                 </li>
             </ul>
-        </li> --}}
+        </li>
     </ul>
 </section>

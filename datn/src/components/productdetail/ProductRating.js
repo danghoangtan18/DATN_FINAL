@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 function ProductRating({ productId, user }) {
   const [rating, setRating] = useState(0);
@@ -11,7 +10,6 @@ function ProductRating({ productId, user }) {
   const [reviews, setReviews] = useState([]);
   const [reviewText, setReviewText] = useState("");
   const [hasPurchased, setHasPurchased] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`http://localhost:8000/api/products/${productId}/ratings`)
@@ -41,28 +39,17 @@ function ProductRating({ productId, user }) {
       const userId = userData?.ID || user.ID || user.id;
       const userEmail = userData?.Email || user.Email || user.email;
       
-      console.log("=== PURCHASE VERIFICATION DEBUG ===");
-      console.log("User prop:", user);
-      console.log("Stored user:", userData);
-      console.log("Final user ID:", userId);
-      console.log("Final user email:", userEmail);
-      console.log("Product ID:", productId);
-      console.log("=====================================");
-      
       // Thử check bằng cả user_id và email
       const checkPurchaseAPI = async () => {
         try {
           // Thử API với user_id trước
           if (userId) {
             let res = await fetch(`http://localhost:8000/api/orders/check-purchased?user_id=${userId}&product_id=${productId}`);
-            console.log("API user_id status:", res.status);
             
             if (res.ok) {
               let data = await res.json();
-              console.log("API user_id response:", data);
               
               if (data.purchased) {
-                console.log("✅ FOUND ORDER BY USER_ID - Setting hasPurchased = true");
                 setHasPurchased(true);
                 return;
               }
@@ -72,17 +59,13 @@ function ProductRating({ productId, user }) {
           // Nếu không tìm thấy bằng user_id, thử bằng email
           if (userEmail) {
             let res = await fetch(`http://localhost:8000/api/orders/check-purchased?email=${encodeURIComponent(userEmail)}&product_id=${productId}`);
-            console.log("API email status:", res.status);
             
             if (res.ok) {
               let data = await res.json();
-              console.log("API email response:", data);
               
               const purchased = data.purchased || data.has_purchased || data.canReview || data.can_review || false;
-              console.log("Final purchased value:", purchased);
               
               if (purchased) {
-                console.log("✅ FOUND ORDER BY EMAIL - Setting hasPurchased = true");
                 setHasPurchased(true);
                 return;
               }
@@ -90,11 +73,10 @@ function ProductRating({ productId, user }) {
           }
           
           // Nếu tất cả đều fail
-          console.log("❌ NO ORDERS FOUND - Setting hasPurchased = false");
           setHasPurchased(false);
           
         } catch (err) {
-          console.error("API error details:", err);
+          console.error("Purchase verification error:", err);
           setHasPurchased(false);
         }
       };

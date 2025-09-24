@@ -55,5 +55,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         // Đăng ký middleware admin
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        // Đăng ký middleware JWT
+        'jwt.auth' => \App\Http\Middleware\JwtAuthMiddleware::class,
     ];
     }

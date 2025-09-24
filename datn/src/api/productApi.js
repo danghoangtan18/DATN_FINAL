@@ -1,7 +1,7 @@
 // src/api/productApi.js
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
 
 // Gọi danh sách sản phẩm
 export const fetchProducts = (page = 1, filters = {}) => {

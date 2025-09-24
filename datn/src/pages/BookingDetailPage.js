@@ -66,14 +66,16 @@ export default function BookingDetailPage() {
 
   // Hàm đặt sân
   const handleBooking = () => {
-    if (!user) {
-      alert('Vui lòng đăng nhập để đặt sân!');
-      return;
-    }
-    if (!selectedStartSlot || !selectedEndSlot) {
-      alert('Vui lòng chọn khung giờ!');
-      return;
-    }
+    setLoading(true);
+    try {
+      if (!user) {
+        console.error('User not logged in');
+        return;
+      }
+      if (!selectedStartSlot || !selectedEndSlot) {
+        console.error('Time slot not selected');
+        return;
+      }
     const startHour = parseInt(selectedStartSlot.split(':')[0]);
     const endHour = parseInt(selectedEndSlot.split(':')[0]);
     const duration = endHour - startHour + 1;
@@ -93,6 +95,9 @@ export default function BookingDetailPage() {
     };
     localStorage.setItem('pendingBooking', JSON.stringify(booking));
     navigate('/checkout');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

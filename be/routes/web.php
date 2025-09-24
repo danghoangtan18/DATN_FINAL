@@ -66,7 +66,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('category-attribute/create', [CategoryAttributeController::class, 'create'])->name('category-attribute.create');
     Route::post('category-attribute/store', [CategoryAttributeController::class, 'store'])->name('category-attribute.store');
 
-    Route::get('comments', fn () => view('admin.comments.index'))->name('comments.index');
+    // Comment Management Routes
+    Route::prefix('comments')->name('comments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CommentController::class, 'dashboard'])->name('dashboard');
+        Route::get('products', [\App\Http\Controllers\Admin\CommentController::class, 'productComments'])->name('product');
+        Route::get('posts', [\App\Http\Controllers\Admin\CommentController::class, 'postComments'])->name('post');
+        
+        Route::put('products/{id}/status', [\App\Http\Controllers\Admin\CommentController::class, 'updateProductCommentStatus'])->name('product.update-status');
+        Route::delete('products/{id}', [\App\Http\Controllers\Admin\CommentController::class, 'deleteProductComment'])->name('product.delete');
+        Route::post('products/bulk', [\App\Http\Controllers\Admin\CommentController::class, 'bulkProductCommentAction'])->name('product.bulk');
+        
+        Route::delete('posts/{id}', [\App\Http\Controllers\Admin\CommentController::class, 'deletePostComment'])->name('post.delete');
+        Route::post('posts/bulk-delete', [\App\Http\Controllers\Admin\CommentController::class, 'bulkDeletePostComments'])->name('post.bulk-delete');
+    });
 
     Route::resource('courts', CourtController::class);
     Route::resource('bookings', CourtBookingController::class);
@@ -76,11 +88,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('posts', PostController::class);
 
     Route::resource('post_categories', PostCategoryController::class);
-
-    Route::prefix('comments')->name('comments.')->group(function () {
-        Route::resource('product', \App\Http\Controllers\Admin\ProductReviewController::class);
-        Route::resource('post', \App\Http\Controllers\Admin\PostCommentController::class); // THÊM DÒNG NÀY
-    });
 
     Route::prefix('statistics')->name('statistics.')->group(function () {
         Route::get('revenue', [StatisticsController::class, 'indexrevenue'])->name('revenue');

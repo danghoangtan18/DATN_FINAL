@@ -79,17 +79,29 @@ function UserProfile() {
   // Lấy thông tin user
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) return;
+    if (!storedUser) {
+      console.log("No user found in localStorage");
+      return;
+    }
+    
     let userData;
     try {
       userData = JSON.parse(storedUser);
+      console.log("Parsed user data from localStorage:", userData);
     } catch (e) {
+      console.error("Error parsing user data from localStorage:", e);
       return;
     }
-    if (!userData.ID) return;
-    axios.get(`http://localhost:8000/api/users/${userData.ID}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then(res => {
+    
+    if (!userData.ID) {
+      console.error("No user ID found in userData:", userData);
+      return;
+    }
+    
+    console.log("Making API call to fetch user data for ID:", userData.ID);
+    axios.get(`http://localhost:8000/api/users/${userData.ID}`)
+    .then(res => {
+      console.log("API response successful:", res.data);
       setUser({
         id: userData.ID,
         name: res.data.Name || "",
@@ -119,6 +131,26 @@ function UserProfile() {
         district: res.data.district || "",
         ward: res.data.ward || "",
       });
+    })
+    .catch(error => {
+      console.error("Error fetching user data:", error);
+      // Nếu có lỗi, vẫn set user từ localStorage để không bị stuck
+      setUser({
+        id: userData.ID,
+        name: userData.Name || "",
+        email: userData.Email || "",
+        phone: userData.Phone || "",
+        gender: userData.Gender || "",
+        dob: formatDate(userData.Date_of_birth),
+        address: userData.Address || "",
+        avatar: userData.Avatar || userData.avatar || "",
+        province_code: userData.province_code || "",
+        district_code: userData.district_code || "",
+        ward_code: userData.ward_code || "",
+        province: userData.province || "",
+        district: userData.district || "",
+        ward: userData.ward || "",
+      });
     });
   }, []);
 
@@ -129,12 +161,17 @@ function UserProfile() {
   // Lấy danh sách sản phẩm để map slug nếu cần
   const [productSlugMap, setProductSlugMap] = useState({});
   useEffect(() => {
-    axios.get("http://localhost:8000/api/products").then(res => {
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    
+    axios.get("http://localhost:8000/api/products", { headers }).then(res => {
       const map = {};
       (res.data.data || []).forEach(p => {
         map[p.Product_ID] = p.slug;
       });
       setProductSlugMap(map);
+    }).catch(error => {
+      console.error("Error fetching products:", error);
     });
   }, []);
 
@@ -293,7 +330,12 @@ function UserProfile() {
       const res = await axios.post(
         `http://localhost:8000/api/users/${user.id}`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { 
+          headers: { 
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        }
       );
 
       // Cập nhật lại user với dữ liệu mới nhất từ backend (có avatar mới nếu có)

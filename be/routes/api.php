@@ -33,37 +33,6 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Auth\RegisterController;
 
-// THÊM ROUTE DEBUG - ĐẶT Ở ĐẦU TRƯỚC CÁC ROUTE KHÁC
-Route::get('/debug-variants', function() {
-    try {
-        // Test direct query
-        $directVariants = \DB::table('product_variants')->where('Product_ID', 61)->get();
-        
-        // Test model query
-        $product = \App\Models\Product::find(61);
-        $modelVariants = $product ? $product->variants : null;
-        
-        // Test with eager loading
-        $productWithVariants = \App\Models\Product::with('variants')->find(61);
-        
-        return response()->json([
-            'direct_db_count' => $directVariants->count(),
-            'direct_db_data' => $directVariants->toArray(),
-            'model_variants_count' => $modelVariants ? $modelVariants->count() : 0,
-            'model_variants_data' => $modelVariants ? $modelVariants->toArray() : null,
-            'eager_loaded_count' => $productWithVariants && $productWithVariants->variants ? $productWithVariants->variants->count() : 0,
-            'eager_loaded_data' => $productWithVariants && $productWithVariants->variants ? $productWithVariants->variants->toArray() : null,
-            'relation_loaded' => $productWithVariants ? $productWithVariants->relationLoaded('variants') : false
-        ], 200, [], JSON_PRETTY_PRINT);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ], 500);
-    }
-});
-
 // Products - ĐẶT THEO THỨ TỰ ƯU TIÊN
 Route::get('/products/search', [ProductApiController::class, 'search']); // SEARCH TRƯỚC
 Route::get('/products/{id}', [ProductApiController::class, 'show']);
@@ -91,16 +60,11 @@ Route::post('/values', [ProductValueApiController::class, 'store']);
 Route::put('/values/{id}', [ProductValueApiController::class, 'update']);
 Route::delete('/values/{id}', [ProductValueApiController::class, 'destroy']);
 
-// Users
-Route::get('/users', [UserApiController::class, 'index']);
-Route::get('/users/{id}', [UserApiController::class, 'show']);
-Route::post('/users', [UserApiController::class, 'store']);
-Route::put('/users/{id}', [UserApiController::class, 'update']);
-Route::post('/users/{id}', [UserApiController::class, 'update']);
-Route::delete('/users/{id}', [UserApiController::class, 'destroy']);
-Route::put('users/{user}', [UserApiController::class, 'update']);
-Route::patch('users/{user}', [UserApiController::class, 'update']);
-Route::post('/users/{id}/update-profile', [UserApiController::class, 'updateProfile']);
+// Users - PUBLIC routes only
+Route::get('/users', [UserApiController::class, 'index']); // admin only, but defined public for now
+Route::get('/users/{id}', [UserApiController::class, 'show']); // public user profile
+Route::post('/users', [UserApiController::class, 'store']); // registration
+Route::delete('/users/{id}', [UserApiController::class, 'destroy']); // admin only
 
 // Login
 Route::post('/login', [UserApiController::class, 'login']);
@@ -147,53 +111,71 @@ Route::post('/chatbot/badminton', [ProductApiController::class, 'chatbot']);
 
 // Product Variants
 Route::get('/product-variants', [ProductVariantController::class, 'index']);
-Route::post('/vouchers/check', [VoucherApiController::class, 'check']);
-Route::post('/orders/{id}/cancel', [OrderApi::class, 'cancelOrder']);
-Route::post('/court-bookings/{id}/cancel', [CourtBookingApi::class, 'cancel']);
 
-// VNPAY Payment
+// Orders - chuyển thành public
+Route::post('/orders', [OrderApi::class, 'store']);
+Route::get('/orders/user/{id}', [OrderApi::class, 'getOrdersByUser']);
+Route::post('/orders/{id}/cancel', [OrderApi::class, 'cancelOrder']);
+
+// Comments - chuyển thành public  
+Route::post('products/{product}/comments', [CommentApiController::class, 'storeProductComment']);
+Route::post('posts/{post}/comments', [CommentApiController::class, 'storePostComment']);
+
+// Ratings - chuyển thành public
+Route::post('/products/{productId}/ratings', [ProductRatingController::class, 'store']);
+
+// Notifications - chuyển thành public
+Route::get('/notifications', [NotificationController::class, 'index']);
+Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Route::post('/notifications/mark-read', [NotificationController::class, 'markManyAsRead']);
+Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+Route::post('/notifications/delete-many', [NotificationController::class, 'destroyMany']);
+Route::post('/notifications/read-all', [NotificationController::class, 'readAll']);
+Route::post('/notifications', [NotificationController::class, 'store']);
+
+// Court Bookings - chuyển thành public
+Route::post('/court_bookings', [CourtBookingApi::class, 'store']);
+Route::post('/court-bookings/{id}/cancel', [CourtBookingApi::class, 'cancel']);
+Route::get('court_bookings/user/{id}', [CourtBookingApi::class, 'getByUser']);
+
+// Comment Rating - chuyển thành public
+Route::post('comments/{id}/rate', [CommentRatingApiController::class, 'store']);
+
+// Payment - chuyển thành public
 Route::post('/vnpay/create', [VnpayController::class, 'createPayment']);
+
+// User profile updates - chuyển thành public
+Route::put('/users/{id}', [UserApiController::class, 'update']);
+Route::post('/users/{id}', [UserApiController::class, 'update']);
+Route::post('/users/{id}/update-profile', [UserApiController::class, 'updateProfile']);
+
+// Public API Routes (không cần authentication)
+Route::post('/vouchers/check', [VoucherApiController::class, 'check']);
 
 // Locations
 Route::get('/locations', [LocationApi::class, 'index']);
 Route::get('/locations/{id}/courts', [LocationApi::class, 'courts']);
-Route::get('court_bookings/user/{id}', [CourtBookingApi::class, 'getByUser']);
 
-// Bình luận sản phẩm
+// Bình luận sản phẩm - GET public, POST protected
 Route::get('products/{product}/comments', [CommentApiController::class, 'productComments']);
-Route::post('products/{product}/comments', [CommentApiController::class, 'storeProductComment']);
 
-// Bình luận bài viết
+// Bình luận bài viết - GET public, POST protected  
 Route::get('posts/{post}/comments', [CommentApiController::class, 'postComments']);
-Route::post('posts/{post}/comments', [CommentApiController::class, 'storePostComment']);
 
-// Đánh giá bình luận (like/dislike)
-Route::post('comments/{id}/rate', [CommentRatingApiController::class, 'store']);
+// Đánh giá bình luận (like/dislike) - GET public, POST protected
 Route::get('comments/{id}/rate', [CommentRatingApiController::class, 'count']);
 
-// Đánh giá sản phẩm (rating) - CHUẨN RESTful, hỗ trợ ảnh
-Route::get('/products/{productId}/ratings', [ProductRatingController::class, 'list']);   // Lấy danh sách đánh giá + ảnh
-Route::post('/products/{productId}/ratings', [ProductRatingController::class, 'store']); // Gửi đánh giá kèm ảnh
+// Đánh giá sản phẩm (rating) - GET public, POST protected
+Route::get('/products/{productId}/ratings', [ProductRatingController::class, 'list']);
 
 // LẤY TOP ĐÁNH GIÁ CAO NHẤT TOÀN SHOP
-Route::get('/top-reviews', [ProductRatingController::class, 'topReviews']); // <-- Thêm dòng này
+Route::get('/top-reviews', [ProductRatingController::class, 'topReviews']);
 
-// Notifications
-Route::get('/notifications', [NotificationController::class, 'index']); // Lấy danh sách thông báo
-Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']); // Đánh dấu đã đọc 1 thông báo
-Route::post('/notifications/mark-read', [NotificationController::class, 'markManyAsRead']); // Đánh dấu đã đọc nhiều thông báo
-Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']); // Xóa 1 thông báo
-Route::post('/notifications/delete-many', [NotificationController::class, 'destroyMany']); // Xóa nhiều thông báo
-Route::post('/notifications', [NotificationController::class, 'store']); // Tạo mới thông báo
-
-// Đánh dấu tất cả thông báo là đã đọc cho user
-Route::post('/notifications/read-all', [NotificationController::class, 'readAll']); // SỬA ĐÚNG CONTROLLER
-
-// Contact Messages
+// Contact Messages - POST public để khách có thể liên hệ
 Route::post('/contact', [ContactMessageController::class, 'store']);
-Route::get('/contacts', [ContactMessageController::class, 'index']); // (tuỳ chọn, cho admin xem tất cả liên hệ)
+Route::get('/contacts', [ContactMessageController::class, 'index']); // (admin only)
 
-// Expert Reviews
+// Expert Reviews - PUBLIC
 Route::get('/expert-reviews', [\App\Http\Controllers\Api\ExpertReviewApiController::class, 'index']);
 
 
@@ -201,4 +183,24 @@ Route::prefix('product-lines')->group(function () {
     Route::get('/', [App\Http\Controllers\Api\ProductLineApiController::class, 'index']);
     Route::get('/brand/{brand}', [App\Http\Controllers\Api\ProductLineApiController::class, 'getByBrand']);
     Route::get('/{id}', [App\Http\Controllers\Api\ProductLineApiController::class, 'show']);
+});
+
+// Admin Comment Management Routes (Protected)
+Route::middleware(['jwt.auth', 'admin'])->prefix('admin/comments')->group(function () {
+    // Product Comments
+    Route::get('products', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'getProductComments']);
+    Route::put('products/{id}/status', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'updateProductCommentStatus']);
+    Route::delete('products/{id}', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'deleteProductComment']);
+    Route::post('products/bulk-update', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'bulkUpdateProductComments']);
+    Route::delete('products/bulk-delete', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'bulkDeleteProductComments']);
+    
+    // Post Comments
+    Route::get('posts', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'getPostComments']);
+    Route::delete('posts/{id}', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'deletePostComment']);
+    Route::delete('posts/bulk-delete', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'bulkDeletePostComments']);
+    
+    // Stats & Filters
+    Route::get('stats', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'getCommentStats']);
+    Route::get('products-filter', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'getProductsForFilter']);
+    Route::get('posts-filter', [\App\Http\Controllers\Api\Admin\CommentManagementController::class, 'getPostsForFilter']);
 });

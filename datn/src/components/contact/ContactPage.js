@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 
 const popupStyle = {
   position: "fixed",
@@ -66,7 +66,7 @@ const ContactPage = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:8000/api/contact", {
+      await api.post("/contact", {
         Name: form.name,
         Phone: form.phone,
         Email: form.email,

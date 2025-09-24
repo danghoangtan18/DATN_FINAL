@@ -209,8 +209,8 @@ function CheckoutLeft({ cartItems, form, setForm }) {
     const shipping_fee = 30000;
     const voucher_id = null;
 
-    if (!form.province_code || !form.district_code || !form.ward_code || !form.address || cartItems.length === 0) {
-      alert("Vui lòng điền đầy đủ thông tin và chọn sản phẩm!");
+    if (!form.address || !form.phone || !form.full_name || cartItems.length === 0) {
+      console.error("Incomplete form or empty cart");
       return;
     }
 
@@ -230,12 +230,12 @@ function CheckoutLeft({ cartItems, form, setForm }) {
 
       const result = await res.text();
       if (!res.ok) {
-        alert("Đặt hàng thất bại: " + (result || "Lỗi không xác định!"));
+        console.error("Order failed:", result);
       } else {
-        alert("Đặt hàng thành công!");
+        console.log("Order successful");
       }
     } catch (err) {
-      alert("Lỗi kết nối: " + err.message);
+      console.error("Connection error:", err.message);
     }
   };
 

@@ -130,7 +130,6 @@ function ProductComments({ productId, user }) {
       .then(res => res.json())
       .then(data => {
         setComments(data);
-        console.log("comments data:", data); // Thêm dòng này để xem dữ liệu trả về
       })
       .catch(() => setComments([]));
   }, [productId]);
@@ -138,6 +137,7 @@ function ProductComments({ productId, user }) {
   // Gửi bình luận mới
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const res = await fetch(`http://localhost:8000/api/products/${productId}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -149,7 +149,6 @@ function ProductComments({ productId, user }) {
     });
 
     const data = await res.json();
-    console.log("POST response:", data); // <-- Thêm dòng này để xem response trả về khi gửi bình luận
 
     if (res.ok) {
       setContent("");
@@ -158,11 +157,11 @@ function ProductComments({ productId, user }) {
         .then(res => res.json())
         .then(data => {
           setComments(data);
-          console.log("GET comments after post:", data);
         });
     } else {
       setMessage("Có lỗi: " + (data.message || JSON.stringify(data)));
     }
+    setLoading(false);
   };
 
   return (

@@ -125,6 +125,12 @@ class Product extends Model
         return $this->hasMany(ProductRating::class, 'Product_ID', 'Product_ID');
     }
 
+    // Quan hệ: Sản phẩm có nhiều bình luận
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'Product_ID', 'Product_ID');
+    }
+
     // Override để tìm sản phẩm theo slug thay vì ID
     public function getRouteKeyName(): string
     {
