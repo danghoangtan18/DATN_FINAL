@@ -185,6 +185,13 @@ Route::prefix('product-lines')->group(function () {
     Route::get('/{id}', [App\Http\Controllers\Api\ProductLineApiController::class, 'show']);
 });
 
+// Promotions API
+Route::prefix('promotions')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\PromotionController::class, 'apiIndex']);
+    Route::get('/{promotion}', [\App\Http\Controllers\Admin\PromotionController::class, 'apiShow']);
+    Route::post('/validate-code', [\App\Http\Controllers\Admin\PromotionController::class, 'validatePromoCode']);
+});
+
 // Admin Comment Management Routes (Protected)
 Route::middleware(['jwt.auth', 'admin'])->prefix('admin/comments')->group(function () {
     // Product Comments

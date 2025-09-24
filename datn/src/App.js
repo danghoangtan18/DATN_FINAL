@@ -20,6 +20,7 @@ import ArticlePage from "./pages/ArticlePage";
 import ArticleListPage from "./pages/ArticleListPage";
 import FaqPage from "./pages/FaqPage";
 import PolicyPage from "./pages/PolicyPage";
+import PromotionPage from "./pages/PromotionPage";
 import VnpayCallback from "./components/VnpayCallback";
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/article/:id" element={<ArticlePage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/policy" element={<PolicyPage />} />
+          <Route path="/promotions" element={<PromotionPage />} />
           <Route path="/vnpay-callback" element={<VnpayCallback />} />
         </Routes>
       </BrowserRouter>

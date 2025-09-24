@@ -454,124 +454,123 @@ function ProductList({ page, filters, onAddCompare, compareProducts = [], sort }
               )}
             </div>
             
-            {/* Ảnh sản phẩm - THÊM KEY VÀ FORCE RELOAD */}
-            <img
-              key={`product-image-${product.Product_ID}-${Date.now()}`} // THÊM KEY UNIQUE
-              src={`/${product.Image}?v=${Date.now()}`} // THÊM VERSION PARAM
-              alt={product.Name}
-              className="product-list-image"
-              loading="lazy" // THÊM LAZY LOADING
-              onLoad={(e) => {
-                // THÊM: Reset error state khi load thành công
-                e.target.style.display = 'block';
-                e.target.style.opacity = '1';
-              }}
-              onError={(e) => {
-                console.log(`❌ Image load failed for product ${product.Product_ID}:`, product.Image);
-                
-                // LẤY KÍCH THƯỚC CHÍNH XÁC CỦA IMG ELEMENT
-                const imgElement = e.target;
-                const computedStyle = window.getComputedStyle(imgElement);
-                const imgWidth = imgElement.offsetWidth || imgElement.clientWidth;
-                const imgHeight = imgElement.offsetHeight || imgElement.clientHeight;
-                
-                // FALLBACK NẾU KHÔNG LẤY ĐƯỢC KÍCH THƯỚC
-                const finalWidth = imgWidth > 0 ? imgWidth : 240;
-                const finalHeight = imgHeight > 0 ? imgHeight : 200;
-                
-                console.log(`📐 Image dimensions: ${finalWidth}x${finalHeight}`);
-                
-                // Ẩn img gốc
-                imgElement.style.display = 'none';
-                
-                // Kiểm tra đã có placeholder chưa
-                const existingPlaceholder = imgElement.parentNode.querySelector('.image-placeholder');
-                if (existingPlaceholder) {
-                  return;
+            {/* Ảnh sản phẩm */}
+            {(() => {
+              // Priority: product.Image > first gallery image
+              let imagePath = null;
+              let imageSource = "";
+              
+              if (product.Image) {
+                imagePath = product.Image;
+                imageSource = "main";
+              } else if (product.images && product.images.length > 0) {
+                imagePath = product.images[0].Image_path || product.images[0].image_path;
+                imageSource = "gallery";
+              }
+              
+              if (imagePath) {
+                // Try different URL formats based on image path
+                let url;
+                if (imagePath.includes('uploads/')) {
+                  // Full path with uploads directory
+                  url = `http://localhost:8000/${encodeURI(imagePath)}`;
+                } else {
+                  // Simple filename - try multiple locations
+                  url = `http://localhost:8000/uploads/products/${encodeURI(imagePath)}`;
                 }
                 
-                // Tạo placeholder với KÍCH THƯỚC CHÍNH XÁC
-                const placeholder = document.createElement('div');
-                placeholder.className = 'image-placeholder';
-                placeholder.style.cssText = `
-                  width: ${finalWidth}px;
-                  height: ${finalHeight}px;
-                  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  justify-content: center;
-                  border-radius: 12px;
-                  border: 2px dashed #cbd5e0;
-                  color: #64748b;
-                  font-size: 14px;
-                  font-weight: 500;
-                  text-align: center;
-                  line-height: 1.4;
-                  transition: all 0.3s ease;
-                  cursor: default;
-                  position: relative;
-                  object-fit: cover;
-                  flex-shrink: 0;
-                `;
+                console.log(`🔗 Loading ${imageSource} image for product ${product.Product_ID}:`, url);
+                console.log(`📁 Original path:`, imagePath);
                 
-                // TÍNH TOÁN ICON SIZE THEO TỶ LỆ
-                const iconSize = Math.min(finalWidth, finalHeight) * 0.25; // 25% của kích thước nhỏ nhất
-                const fontSize = Math.max(12, finalWidth * 0.05); // Font size responsive
-                
-                placeholder.innerHTML = `
-                  <div style="
-                    font-size: ${iconSize}px; 
-                    margin-bottom: ${iconSize * 0.2}px; 
-                    opacity: 0.6;
-                    filter: grayscale(0.3);
-                    line-height: 1;
-                  ">🏸</div>
-                  <div style="
-                    font-weight: 600; 
-                    margin-bottom: 4px;
-                    font-size: ${fontSize}px;
-                    max-width: 90%;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  ">
-                    Hình ảnh sản phẩm
+                return (
+                  <img
+                    key={`product-image-${product.Product_ID}`}
+                    src={url}
+                    alt={product.Name}
+                    className="product-list-image"
+                    loading="lazy"
+                    onLoad={(e) => {
+                      console.log(`✅ Image loaded for product ${product.Product_ID}`);
+                      e.target.style.opacity = '1';
+                      e.target.style.display = 'block';
+                    }}
+                onError={(e) => {
+                  console.error(`❌ Image failed for product ${product.Product_ID}:`, product.Image);
+                  console.error(`❌ Failed URL:`, e.target.src);
+                  
+                  // Try alternative URLs
+                  const currentSrc = e.target.src;
+                  const alternatives = [
+                    `http://localhost:8000/${encodeURI(imagePath)}`, // Original path
+                    `http://localhost:8000/uploads/products/${encodeURI(imagePath)}`, // Add uploads prefix
+                    `http://localhost:8000/storage/${encodeURI(imagePath)}`, // Laravel storage
+                    `http://localhost:8000/public/${encodeURI(imagePath)}`, // Public path
+                    "https://via.placeholder.com/200x200/cccccc/666666?text=No+Image", // Final fallback
+                  ];
+                  
+                  // Find next alternative to try
+                  const currentIndex = alternatives.findIndex(alt => currentSrc.includes(alt.split('/').pop()));
+                  if (currentIndex < alternatives.length - 1) {
+                    const nextUrl = alternatives[currentIndex + 1];
+                    console.log(`🔄 Trying alternative URL:`, nextUrl);
+                    e.target.src = nextUrl;
+                    return;
+                  }
+                  
+                  // All alternatives failed, show placeholder
+                  const placeholder = document.createElement('div');
+                  placeholder.style.cssText = `
+                    width: 100%;
+                    height: 200px;
+                    background: #f8f9fa;
+                    border: 2px dashed #dee2e6;
+                    border-radius: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: #6c757d;
+                  `;
+                  placeholder.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 8px;">📷</div>
+                    <div style="font-size: 14px;">Hình ảnh sản phẩm</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Đang cập nhật...</div>
+                  `;
+                  e.target.parentNode.replaceChild(placeholder, e.target);
+                }}
+                style={{
+                  transition: 'opacity 0.3s ease',
+                  opacity: 0,
+                  width: '100%',
+                  height: '200px',
+                  objectFit: 'cover',
+                  backgroundColor: '#f0f0f0',
+                  border: '1px solid #ddd',
+                  display: 'block'
+                }}
+                  />
+                );
+              } else {
+                return (
+                  <div style={{
+                    width: "100%",
+                    height: "200px",
+                    background: "#f8f9fa",
+                    border: "2px dashed #dee2e6",
+                    borderRadius: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#6c757d"
+                  }}>
+                    <div style={{ fontSize: "48px", marginBottom: "8px" }}>📷</div>
+                    <div style={{ fontSize: "14px" }}>Hình ảnh sản phẩm</div>
+                    <div style={{ fontSize: "12px", opacity: 0.7 }}>Đang cập nhật...</div>
                   </div>
-                  <div style="
-                    font-size: ${fontSize * 0.85}px; 
-                    opacity: 0.7;
-                    background: rgba(100,116,139,0.1);
-                    padding: 4px 12px;
-                    border-radius: 12px;
-                    white-space: nowrap;
-                  ">
-                    Đang cập nhật...
-                  </div>
-                `;
-                
-                // Hover effect với kích thước cố định
-                placeholder.addEventListener('mouseenter', function() {
-                  this.style.background = 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%)';
-                  this.style.transform = 'scale(1.02)';
-                });
-                
-                placeholder.addEventListener('mouseleave', function() {
-                  this.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
-                  this.style.transform = 'scale(1)';
-                });
-                
-                // Thêm placeholder VÀO ĐÚNG VỊ TRÍ
-                imgElement.parentNode.insertBefore(placeholder, imgElement);
-              }}
-              style={{
-                transition: 'opacity 0.3s ease', // THÊM TRANSITION
-                opacity: 0 // BẮT ĐẦU VỚI OPACITY 0
-              }}
-              onLoadStart={(e) => {
-                // THÊM: Bắt đầu load
-                e.target.style.opacity = '0';
-              }}
-            />
+                );
+              }
+            })()}
             
             {/* Nội dung sản phẩm */}
             <div className="product-list-info">

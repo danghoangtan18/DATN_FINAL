@@ -123,7 +123,7 @@ function CartRight({ cartItems }) {
         <strong>₫{shippingFee.toLocaleString()}</strong>
       </div>
       {shippingFee === 0 && (
-        <div style={{ color: "#10b981", fontSize: 13, marginTop: 2 }}>
+        <div style={{ color: "#0154b9", fontSize: 13, marginTop: 2 }}>
           Đơn hàng trên 500.000đ được <b>miễn phí vận chuyển</b>
         </div>
       )}
@@ -146,7 +146,7 @@ function CartRight({ cartItems }) {
           <div style={{ color: voucherInfo ? "green" : "red", marginTop: 4 }}>{voucherMsg}</div>
         )}
         {voucherInfo && (
-          <div style={{ color: "#10b981", fontSize: 13, marginTop: 2 }}>
+          <div style={{ color: "#0154b9", fontSize: 13, marginTop: 2 }}>
             Mã: <b>{voucherInfo.code}</b> - {voucherInfo.discount_type === "percentage"
               ? `Giảm ${voucherInfo.discount_value}%`
               : `Giảm ${Number(voucherInfo.discount_value).toLocaleString()}₫`}
@@ -187,14 +187,7 @@ function CartRight({ cartItems }) {
       
       <button
         className="checkout-btn"
-        onClick={handleCheckout}
-      >
-        Thanh Toán
-      </button>
-      
-      <button
-        className="checkout-btn"
-        style={{ background: "#10b981", marginTop: 10 }}
+        style={{ background: "#0154b9", marginTop: 10 }}
         onClick={() => {
           navigate('/checkout', {
             state: {

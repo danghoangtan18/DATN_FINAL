@@ -102,6 +102,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Flash Sale routes
     Route::resource('flash-sales', FlashSaleController::class);
 
+    // Promotion routes
+    Route::resource('promotions', \App\Http\Controllers\Admin\PromotionController::class);
+    Route::post('promotions/{promotion}/toggle', [\App\Http\Controllers\Admin\PromotionController::class, 'toggle'])
+        ->name('promotions.toggle');
+
     // Banner routes
     Route::resource('banner', BannerController::class);
     Route::get('banner-image/{id}', [BannerController::class, 'image'])->name('banner.image');

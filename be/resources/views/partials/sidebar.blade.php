@@ -212,6 +212,28 @@
             </ul>
         </li>
 
+        {{-- Promotions --}}
+        <li class="has-submenu {{ request()->is('admin/promotions*') ? 'active' : '' }}">
+            <a href="#">
+                <i class='bx bxs-gift'></i>
+                <span class="text">Khuyến mãi</span>
+            </a>
+            <ul class="submenu">
+                <li>
+                    <a href="{{ route('admin.promotions.index') }}" class="{{ request()->routeIs('admin.promotions.index') ? 'active1' : '' }}">
+                        <i class='bx bx-list-ul'></i>
+                        <span class="text">Danh sách khuyến mãi</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.promotions.create') }}" class="{{ request()->routeIs('admin.promotions.create') ? 'active1' : '' }}">
+                        <i class='bx bx-plus'></i>
+                        <span class="text">Thêm khuyến mãi</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         {{-- Banner --}}
         <li class="has-submenu {{ request()->is('api/admin/banner*') ? 'active' : '' }}">
             <a href="#">
